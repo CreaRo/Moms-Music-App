@@ -83,8 +83,6 @@ public class MainActivity extends AppCompatActivity implements DownloadManager.D
             }
         });
 
-        setupProgressDialog();
-
         btnPlayPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -131,12 +129,18 @@ public class MainActivity extends AppCompatActivity implements DownloadManager.D
     }
 
     private void setupProgressDialog() {
-        progressDialog = new ProgressDialog(this);
+        if (progressDialog != null) {
+            progressDialog.dismiss();
+            progressDialog.cancel();
+            progressDialog = null;
+        }
+        progressDialog = new ProgressDialog(MainActivity.this);
         progressDialog.setTitle("Downloading Music");
         progressDialog.setCancelable(false);
         progressDialog.setProgress(0);
         progressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
         progressDialog.setIndeterminate(false);
+        progressDialog.show();
     }
 
     // Initiating Menu XML file (menu.xml)
@@ -176,13 +180,22 @@ public class MainActivity extends AppCompatActivity implements DownloadManager.D
     @Override
     public void onDownloadProgress(final int x) {
         if (x % 5 == 0)
-            Log.d("Downloading ", "" + x + " %");
+            Log.d("Downloading ", x + " %");
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                progressDialog.setProgress(x);
+                if (progressDialog != null) {
+                    progressDialog.show();
+                    progressDialog.setProgress(x);
+                } else {
+                    setupProgressDialog();
+                }
             }
         });
+        if (x == 100) {
+            if (progressDialog != null)
+                progressDialog.dismiss();
+        }
     }
 
     @Override
